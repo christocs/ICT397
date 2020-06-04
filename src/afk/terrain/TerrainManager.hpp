@@ -19,12 +19,12 @@ namespace Afk {
 
     auto initialize() -> void;
     auto get_model() -> Afk::Model;
+    // bilinear height at
     auto height_at(float x, float y) -> float;
     auto generate_terrain(int width, int length, float roughness, float scaling) -> void;
 
   private:
     bool is_initialized = false;
-
     auto generate_flat_plane(int width, int length) -> void;
     auto generate_height_map(int width, int length, float roughness, float scaling) -> void;
   };

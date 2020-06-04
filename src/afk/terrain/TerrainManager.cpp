@@ -39,7 +39,8 @@ auto TerrainManager::generate_height_map(int width, int length, float roughness,
   auto *noise_set = noise->GetSimplexFractalSet(0, 0, 0, w, 1, l);
   auto index      = size_t{0};
 
-  this->height_map.width = width;
+  this->height_map.width  = width;
+  this->height_map.length = length;
   this->height_map.heights.resize(num_vertices);
 
   for (auto y = 0; y < l; ++y) {
@@ -123,17 +124,20 @@ static auto lerp(float a, float b, float t) {
 static auto bilerp(float aa, float ba, float ab, float bb, float tx, float ty) {
   return lerp(lerp(aa, ba, tx), lerp(ab, bb, tx), ty);
 }
-auto TerrainManager::height_at(float x, float y) -> float {
-  auto xmin = static_cast<int>(floor(static_cast<double>(x)));
-  auto xmax = static_cast<int>(ceil(static_cast<double>(x)));
-  auto ymin = static_cast<int>(floor(static_cast<double>(y)));
-  auto ymax = static_cast<int>(ceil(static_cast<double>(y)));
 
-  auto t00 = static_cast<float>(this->height_map.at({xmin, ymin}));
-  auto t10 = static_cast<float>(this->height_map.at({xmax, ymin}));
-  auto t01 = static_cast<float>(this->height_map.at({xmin, ymax}));
-  auto t11 = static_cast<float>(this->height_map.at({xmax, ymax}));
-  return bilerp(t00, t10, t01, t11, x - xmin, y - ymin);
+auto TerrainManager::height_at(float x, float y) -> float {
+  float mx  = x + this->height_map.width / 2.0f;
+  float my  = y + this->height_map.length / 2.0f;
+  auto xmin = static_cast<int>(floor(static_cast<double>(mx)));
+  auto xmax = static_cast<int>(ceil(static_cast<double>(mx)));
+  auto ymin = static_cast<int>(floor(static_cast<double>(my)));
+  auto ymax = static_cast<int>(ceil(static_cast<double>(my)));
+
+  auto t00 = (this->height_map.at({xmin, ymin}));
+  auto t10 = (this->height_map.at({xmax, ymin}));
+  auto t01 = (this->height_map.at({xmin, ymax}));
+  auto t11 = (this->height_map.at({xmax, ymax}));
+  return bilerp(t00, t10, t01, t11, mx - xmin, my - ymin);
 }
 
 auto TerrainManager::initialize() -> void {

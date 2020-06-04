@@ -11,6 +11,7 @@ namespace Afk {
 
     std::vector<float> heights = {};
     int width                  = {};
+    int length                 = {};
 
     auto at(Point p) const -> float;
     auto operator[](Point p) -> float &;
