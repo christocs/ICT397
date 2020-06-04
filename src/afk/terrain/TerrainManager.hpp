@@ -9,7 +9,7 @@ namespace Afk {
   class TerrainManager {
   public:
     HeightMap height_map = {};
-    Mesh mesh           = {};
+    Mesh mesh            = {};
 
     TerrainManager()                       = default;
     TerrainManager(TerrainManager &&)      = delete;
@@ -19,6 +19,7 @@ namespace Afk {
 
     auto initialize() -> void;
     auto get_model() -> Afk::Model;
+    auto height_at(float x, float y) -> float;
     auto generate_terrain(int width, int length, float roughness, float scaling) -> void;
 
   private:

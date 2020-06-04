@@ -77,6 +77,10 @@ static auto gameobject_get_entity(Afk::Asset::Asset *e) -> GameObjectWrapped {
   return GameObjectWrapped{std::get<Afk::Asset::Asset::Object>(e->data).ent};
 }
 
+static auto terrain_height_at(float x, float y) -> float {
+  return Afk::Engine::get().terrain_manager.height_at(x, y);
+}
+
 static auto toggle_wireframe() -> void {
   auto &renderer = Afk::Engine::get().renderer;
   renderer.set_wireframe(!renderer.get_wireframe());
@@ -187,7 +191,11 @@ auto Afk::add_engine_bindings(lua_State *lua) -> void {
       .addFunction("delta_time", &get_delta_time)
       .addFunction("load_asset", &Afk::Asset::game_asset_factory)
       .addFunction("toggle_wireframe", &toggle_wireframe)
-      .endNamespace();
+      .endNamespace()
+
+      .beginClass<Afk::TerrainManager>("terrain")
+      .addStaticFunction("height_at", terrain_height_at)
+      .endClass();
 
   auto key_ns = luabridge::getGlobalNamespace(lua).beginNamespace("key");
   for (const auto &key : Afk::Script::keys) {

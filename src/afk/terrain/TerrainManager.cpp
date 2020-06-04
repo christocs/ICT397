@@ -117,6 +117,24 @@ auto TerrainManager::get_model() -> Model {
 
   return model;
 }
+static auto lerp(float a, float b, float t) {
+  return a + t * (b - a);
+}
+static auto bilerp(float aa, float ba, float ab, float bb, float tx, float ty) {
+  return lerp(lerp(aa, ba, tx), lerp(ab, bb, tx), ty);
+}
+auto TerrainManager::height_at(float x, float y) -> float {
+  auto xmin = static_cast<int>(floor(static_cast<double>(x)));
+  auto xmax = static_cast<int>(ceil(static_cast<double>(x)));
+  auto ymin = static_cast<int>(floor(static_cast<double>(y)));
+  auto ymax = static_cast<int>(ceil(static_cast<double>(y)));
+
+  auto t00 = static_cast<float>(this->height_map.at({xmin, ymin}));
+  auto t10 = static_cast<float>(this->height_map.at({xmax, ymin}));
+  auto t01 = static_cast<float>(this->height_map.at({xmin, ymax}));
+  auto t11 = static_cast<float>(this->height_map.at({xmax, ymax}));
+  return bilerp(t00, t10, t01, t11, x - xmin, y - ymin);
+}
 
 auto TerrainManager::initialize() -> void {
   afk_assert(!this->is_initialized, "Terrain manager already initialized");
