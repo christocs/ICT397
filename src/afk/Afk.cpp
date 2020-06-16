@@ -64,11 +64,19 @@ auto Engine::initialize() -> void {
                                     true, Afk::RigidBodyType::STATIC,
                                     this->terrain_manager.height_map);
 
+  auto camera_transform = Transform{camera_entity};
+  camera_transform.translation.y = 10.0f;
+  registry.assign<Afk::Transform>(camera_entity, camera_transform);
+  registry.assign<Afk::PhysicsBody>(camera_entity, camera_entity, &this->physics_body_system,
+                                    camera_transform, 0.0f, 0.3f, 0.3f, 100.0f, true,
+                                    Afk::RigidBodyType::DYNAMIC, Afk::Sphere(0.5f));
+
   Afk::Asset::game_asset_factory("asset/basketball.lua");
 
   auto cam = registry.create();
-  registry.assign<Afk::ScriptsComponent>(cam, cam)
-      .add_script("script/component/char_keyboard.lua", this->lua, &this->event_manager)
+  registry
+      .assign<Afk::ScriptsComponent>(cam, cam)
+      //      .add_script("script/component/char_keyboard.lua", this->lua, &this->event_manager)
       .add_script("script/component/camera_mouse_control.lua", this->lua, &this->event_manager)
       .add_script("script/component/debug.lua", this->lua, &this->event_manager);
 
@@ -90,6 +98,7 @@ auto Engine::render() -> void {
 
   this->renderer.clear_screen({135.0f, 206.0f, 235.0f, 1.0f});
   this->ui.prepare();
+  registry.get<Afk::Transform>(camera_entity).rotation = glm::quat{1.0f, 0.0f, 0.0f, 0.0f};
   this->renderer.draw();
   this->ui.draw();
   this->renderer.swap_buffers();
@@ -110,7 +119,48 @@ auto Engine::update() -> void {
 
   // this->update_camera();
 
+  auto& camera_physics = registry.get<Afk::PhysicsBody>(camera_entity);
+  const auto speed = 200000.0f  * this->get_delta_time();
+  if (glfwGetKey(Afk::Engine::get().renderer.window, GLFW_KEY_W) == GLFW_PRESS) {
+    camera_physics.apply_force(camera.get_front()*speed);
+  }
+  if (glfwGetKey(Afk::Engine::get().renderer.window, GLFW_KEY_S) == GLFW_PRESS) {
+    camera_physics.apply_force(-camera.get_front()*speed);
+  }
+  if (glfwGetKey(Afk::Engine::get().renderer.window, GLFW_KEY_D) == GLFW_PRESS) {
+    camera_physics.apply_force(camera.get_right()*speed);
+  }
+  if (glfwGetKey(Afk::Engine::get().renderer.window, GLFW_KEY_A) == GLFW_PRESS) {
+    camera_physics.apply_force(-camera.get_right()*speed);
+  }
+
+  const auto jetpack_speed = 150000.0f  * this->get_delta_time();
+  const float jetpack_max_duration = 1.5f;
+  if (jetpack_duration <  jetpack_max_duration) {
+    if (glfwGetKey(Afk::Engine::get().renderer.window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+      camera_physics.apply_force(camera.get_up() * jetpack_speed);
+      jetpack_duration += this->get_delta_time();
+    } else {
+      jetpack_duration -= this->get_delta_time();
+      if (jetpack_duration < 0.0f) {
+        jetpack_duration = 0.0f;
+      }
+//      if ((jetpack_duration - this->get_delta_time()) > 0) {
+//        jetpack_duration -= this->get_delta_time();
+//      } else {
+//        jetpack_duration = 0.0f;
+//      }
+    }
+  } else if (glfwGetKey(Afk::Engine::get().renderer.window, GLFW_KEY_SPACE) != GLFW_PRESS) {
+    jetpack_duration -= this->get_delta_time();
+    if (jetpack_duration < 0.0f) {
+      jetpack_duration = 0.0f;
+    }
+  }
+
   this->physics_body_system.update(&this->registry, this->get_delta_time());
+
+  this->camera.set_position(glm::vec3{registry.get<Afk::Transform>(camera_entity).translation.x, registry.get<Afk::Transform>(camera_entity).translation.y + 1.0f, registry.get<Afk::Transform>(camera_entity).translation.z});
 
   ++this->frame_count;
   this->last_update = Afk::Engine::get_time();
