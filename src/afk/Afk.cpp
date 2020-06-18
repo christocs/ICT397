@@ -69,7 +69,7 @@ auto Engine::initialize() -> void {
   registry.assign<Afk::Transform>(camera_entity, camera_transform);
   registry.assign<Afk::PhysicsBody>(camera_entity, camera_entity, &this->physics_body_system,
                                     camera_transform, 0.0f, 0.3f, 0.3f, 100.0f, true,
-                                    Afk::RigidBodyType::DYNAMIC, Afk::Sphere(0.5f));
+                                    Afk::RigidBodyType::DYNAMIC, Afk::Sphere(0.75f));
 
   Afk::Asset::game_asset_factory("asset/basketball.lua");
 
@@ -160,7 +160,7 @@ auto Engine::update() -> void {
 
   this->physics_body_system.update(&this->registry, this->get_delta_time());
 
-  this->camera.set_position(glm::vec3{registry.get<Afk::Transform>(camera_entity).translation.x, registry.get<Afk::Transform>(camera_entity).translation.y + 1.0f, registry.get<Afk::Transform>(camera_entity).translation.z});
+  this->camera.set_position(glm::vec3{registry.get<Afk::Transform>(camera_entity).translation.x, registry.get<Afk::Transform>(camera_entity).translation.y, registry.get<Afk::Transform>(camera_entity).translation.z});
 
   ++this->frame_count;
   this->last_update = Afk::Engine::get_time();
