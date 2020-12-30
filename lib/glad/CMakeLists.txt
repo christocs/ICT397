@@ -1,7 +1,12 @@
-add_library(glad STATIC
+cmake_minimum_required(VERSION 3.16)
+
+add_library(glad)
+
+target_sources(glad PRIVATE
     src/glad.cpp
 )
 
-target_include_directories(glad PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
+set_target_properties(glad PROPERTIES ENABLE_EXPORTS ON)
+set_target_properties(glad PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+target_compile_definitions(glad PUBLIC GLAD_GLAPI_EXPORT PRIVATE GLAD_GLAPI_EXPORT_BUILD)
+target_include_directories(glad PUBLIC include)
